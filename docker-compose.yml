@@ -1,0 +1,46 @@
+version: '3.7'
+
+networks:
+  proveedores-net:
+    name: proveedores-net
+
+services:
+  proveedores-back-mariadb:
+    image: mariadb:latest
+    restart: always
+    ports:
+      - 3306:3306
+    container_name: proveedores-back-mariadb
+    networks:
+      - proveedores-net 
+    environment:
+      MYSQL_ROOT_PASSWORD: proveedores
+      MYSQL_DATABASE: proveedores
+    volumes:
+      - mariadb-data-proveedores-back:/var/lib/mysql
+
+  proveedores-back-dev:
+    depends_on:
+      - proveedores-back-mariadb
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    volumes:
+      - nodemodules-proveedores-back:/home/node/proveedores-back/node_modules
+      - .:/home/node/proveedores-back
+    environment:
+      - NODE_ENV=development
+    working_dir: /home/node/proveedores-back
+    container_name: proveedores-back
+    networks:
+      - proveedores-net
+    ports:
+      - 4000:4000
+    tty: true
+
+volumes:
+  nodemodules-proveedores-back:
+    external: true
+
+  mariadb-data-proveedores-back:
+    external: true
